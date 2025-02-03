@@ -1,0 +1,21 @@
+
+CRC calculator https://www.sunshine2k.de/coding/javascript/crc/crc_js.html
+
+CRC version   polynome  init value   output XOR value   inp refl  outp refl	
+crcmpeg2	0x4c11db7	0xffffffff		0				---			---			0xf4a720d7
+crc32	    0x4c11db7	0xffffffff 		0xffffffff		inp			outp		0x587f6666
+crcposix	0x4c11db7	0x0 			0x0				---			---			0x5e75fde0
+crcbzip2	0x4c11db7	0xffffffff 		0xffffffff		---			---			0x0b58df28
+
+4c11db7
+
+0100 1100 0001 0001 1101 1011 0111
+
+0, 1, 2 ,4 ,5, 7, 8, 10, 11, 12, 16, 22, 23 26
+
+
+crcmpeg2 works with byte input, standard polygon, 0xfff... init value
+
+crc32 (linux zip) works with byte input, standard pol, init 0xfff... refl inp byte, refl output and the XOR output with 0xffff...
+
+ 

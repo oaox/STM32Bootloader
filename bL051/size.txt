@@ -1,0 +1,2 @@
+text data bss dec hex filename 16660 0 2416 19076 4a84 bL051.elf
+16660 'bL051.bin'
