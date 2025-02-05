@@ -1,2 +1,2 @@
-text data bss dec hex filename 16952 0 2408 19360 4ba0 bL051.elf
-16952 'bL051.bin'
+text data bss dec hex filename 14408 0 2072 16480 4060 bL051.elf
+14408 'bL051.bin'
