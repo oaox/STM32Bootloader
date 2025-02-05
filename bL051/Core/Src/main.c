@@ -25,13 +25,20 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
+//#include <stdio.h>
 #include <stdbool.h>
+//#include <string.h>
 #include "Uart.h"
 #include "Flash.h"
+#include "Rcc.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct{
+	uint32_t v[0x10];
+} uninitBuff_t;
 
 /* USER CODE END PTD */
 
@@ -47,39 +54,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t crctestdata[4];
-unsigned char crctestdata_bin[] = {
-  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-  0xaa, 0xa3, 0x76, 0x53
-};
-
-volatile  uint8_t d[]= {
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		  0x23, 0xc0, 0x61, 0xcb, 0xa9, 0x26, 0xb7, 0x87, 0x1f, 0xf6, 0x67, 0x0c,
-		  0xaa, 0xa3, 0x76, 0x53,
-		};
 
 
+uninitBuff_t *uninit;
 uint8_t hexLine[100];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,12 +69,11 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// Allow the jump to a foreign application as if it were a reset (load SP and PC)
-//
+
 __attribute__((naked))
 extern void start_application(unsigned long app_link_location)
 {
-	asm(" ldr r0, [r0,#4]"); // get the program counter value from the program's reset vector
+	asm(" ldr r0, [r0,#4]"); // get the new program counter value from the program's reset vector
 
 	asm(" blx r0");          // jump to the start address
 
@@ -111,24 +89,41 @@ uint32_t byteSwap(uint32_t s)
 	for (int i=0; i<4; i++) *dest--= *src++;
 	return d;
 }
+
+void uintToHex(uint32_t v, char *buff, uint8_t term)
+{
+	uint8_t ch;
+	int shift;
+	for(int i=0; i<8; i++) {
+		shift= 4*(7-i);
+		ch= (uint8_t)(v>>shift) & 0x0f;
+		ch += '0';
+		if (ch > '9') ch= ch + ('A'-'9'-1);
+		buff[i]= ch;
+	}
+	buff[8]= term;
+}
+
+
+
 uint32_t calcCrc(void) {
 	uint8_t *beg;
 	uint8_t *crcPtr;
 	uint8_t *end;
+	uint32_t tmp;
 	uint32_t crc;
 	uint32_t crcFlash;
 	uint32_t crci;
 	uint32_t len;
-	uint32_t tmp;
-	uint8_t *s, *d;
-	beg= (uint32_t*)0x8005000;
-	crcPtr= (uint32_t*)(beg + 0xc0);
-	end= *(uint32_t*)crcPtr;
-	end= (uint8_t *)byteSwap((uint32_t)end);
+	beg= (uint8_t*)0x8005000;
+	crcPtr= (beg + 0xc0);
+	tmp= *(uint32_t*)crcPtr;
+	tmp= byteSwap(tmp);
+	end= (uint8_t *)tmp;
 	crcFlash= *(uint32_t*)end;
 	crcFlash= byteSwap(crcFlash);
 	len= (uint32_t)(end-beg);
-	crc= HAL_CRC_Calculate(&hcrc, beg, len);
+	crc= HAL_CRC_Calculate(&hcrc, (uint32_t*)beg, len);
 	crci = crc ^ 0xffffffff;
 
 
@@ -148,14 +143,16 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	// bootloader
-	uint32_t * vectorTable;
-	uint32_t vtor;
+	uint32_t resetFlags;
+	  char rbuff[15];
+	  char cr[3];
 
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -175,14 +172,29 @@ int main(void)
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   //*(uint32_t*)0xE000E010= *(uint32_t*)0xE000E010 & ~2;
+  uninit= (uninitBuff_t *) 0x20000000;
+  for (int i=0; i<4; i++){ uninit->v[i]= 0;}
 
-  uint8_t *cp= (uint8_t*)crctestdata;
+  cr[0]= 0x0a;
+  cr[1]= 0x0d;
+  cr[2]= 0;
+
+  resetFlags= *(uint32_t*)0x40021050;
+  uninit->v[0]= resetFlags;
+  //*(uint32_t*)0x40021050= RMVF;
+  RCC->CSR |= RCC_CSR_RMVF;
+  uintToHex(resetFlags, rbuff, 0x0a);
+  //strcat(rbuff, cr);
+   uartSendResponse(rbuff);
+   resetFlags= *(uint32_t*)0x40021050;
+
+
   //for (int i= 0; i< 16; i++) *cp++= crctestdata_bin[i];
   //*cp= (uint8_t*)&crctestdata[1];
   //for (int i= 0; i< 8; i++) *cp++= crctestdata_bin[15-i];
 
   //uint32_t crcres= HAL_CRC_Calculate(&hcrc, crctestdata, 16);
-
+  //HAL_IWDG_Refresh(&hiwdg);
   bool attf;
   bool app_maybe_present;
   app_maybe_present= *(uint32_t*)AppAddr? true:false;
@@ -260,7 +272,6 @@ if (!attf && app_maybe_present) {
   while (1)
   {
 	  int r;
-	  uint8_t rbuff[15];
 	  r= flashReadOneLine();
 	  r= flashDecodeLine();
 	  if (r == FLASH_FIN) {
@@ -270,7 +281,9 @@ if (!attf && app_maybe_present) {
 		  r= flashWriteData();
 	  }
 	   //r= flashOneLine();
-	   sprintf(rbuff, "%x\r\n", r);
+	  uintToHex((uint32_t)r, rbuff, 0x0a);
+	  //sprintf(rbuff, "%x", r);
+	  //strcat(rbuff, cr);
 	   uartSendResponse(rbuff);
     /* USER CODE END WHILE */
 
@@ -303,7 +316,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_3;
   RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  if (rccHAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -317,13 +330,13 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
+  if (rccHAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  if (rccHAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }

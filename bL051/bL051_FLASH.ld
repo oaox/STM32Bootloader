@@ -44,7 +44,7 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 8K
+  RAM    (xrw)    : ORIGIN = 0x20000010,   LENGTH = 8K-0x10
   FLASH    (rx)   : ORIGIN = 0x8000000,   LENGTH = 64K
 }
 
@@ -130,8 +130,17 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
+
+	/* uninitialized RAM at beginning of ram area */
+/*	.uninited : {
+		.= ALIGN(4);
+		KEEP (*(transferBuffer*))
+		.= . + 0x10;
+		} >RAM
+*/
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
+
 
   /* Initialized data sections into "RAM" Ram type memory */
   .data :

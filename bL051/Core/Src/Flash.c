@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "stm32l0xx_hal.h"
+#include "stm32l0xx_hal_flash_ramfunc.h"
+#include "stm32l0xx_hal_flash_ex.h"
 #include "Uart.h"
 #include "Flash.h"
 
@@ -148,7 +150,7 @@ int flashReadOneLine(void)
 
 int flashDecodeLine(void)
 {
-	int idx;
+	int idx= 0;
 	int err;
 	uint16_t byteCount;
 	uint32_t address;

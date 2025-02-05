@@ -45,7 +45,7 @@
 /*#define HAL_DAC_MODULE_ENABLED   */
 /*#define HAL_FIREWALL_MODULE_ENABLED   */
 /*#define HAL_I2S_MODULE_ENABLED   */
-/*#define HAL_IWDG_MODULE_ENABLED   */
+/*#define HAL_IWDG_MODULE_ENABLED */
 /*#define HAL_LCD_MODULE_ENABLED   */
 /*#define HAL_LPTIM_MODULE_ENABLED   */
 /*#define HAL_RNG_MODULE_ENABLED   */
@@ -241,7 +241,7 @@
 #endif /* HAL_I2S_MODULE_ENABLED */
 
 #ifdef HAL_IWDG_MODULE_ENABLED
- #include "stm32l0xx_hal_iwdg.h"
+ #include <stm32l0xx_hal_iwdg.h>
 #endif /* HAL_IWDG_MODULE_ENABLED */
 
 #ifdef HAL_LCD_MODULE_ENABLED

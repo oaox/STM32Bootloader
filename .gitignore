@@ -10,6 +10,9 @@ debug/
 Release/
 release
 
+#Drivers
+Drivers/
+
 # Prerequisites
 *.d
 
@@ -50,3 +53,6 @@ release
 *.su
 *.idb
 *.pdb
+
+*~
+
