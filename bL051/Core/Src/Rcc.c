@@ -143,6 +143,54 @@ void rccHAL_RCC_GetClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct, uint32_t 
 
 #endif
 #if 1
+HAL_StatusTypeDef rccHAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
+{
+uint32_t tickstart;
+
+//hsi_state = RCC_OscInitStruct->HSIState;
+__HAL_RCC_HSI_CONFIG(0x1);
+tickstart = HAL_GetTick();
+while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSIRDY) == 0U)
+{
+  if((HAL_GetTick() - tickstart ) > HSI_TIMEOUT_VALUE)
+  {
+    return HAL_TIMEOUT;
+  }
+}
+__HAL_RCC_HSI_CALIBRATIONVALUE_ADJUST(RCC_OscInitStruct->HSICalibrationValue);
+__HAL_RCC_PLL_DISABLE();
+
+/* Get Start Tick */
+tickstart = HAL_GetTick();
+
+/* Wait till PLL is ready */
+while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)  != 0U)
+{
+  if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
+  {
+    return HAL_TIMEOUT;
+  }
+}
+__HAL_RCC_PLL_CONFIG(RCC_OscInitStruct->PLL.PLLSource,
+                      RCC_OscInitStruct->PLL.PLLMUL,
+                      RCC_OscInitStruct->PLL.PLLDIV);
+__HAL_RCC_PLL_ENABLE();
+
+/* Get Start Tick */
+tickstart = HAL_GetTick();
+
+tickstart = HAL_GetTick();
+while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)  == 0U)
+{
+  if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
+  {
+    return HAL_TIMEOUT;
+  }
+}
+return HAL_OK;
+}
+
+#else
 /**
   * @brief  Initializes the RCC Oscillators according to the specified parameters in the
   *         RCC_OscInitTypeDef.
@@ -516,6 +564,7 @@ HAL_StatusTypeDef rccHAL_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct)
       __HAL_RCC_PWR_CLK_DISABLE();
     }
   }
+
 
 #if defined(RCC_HSI48_SUPPORT)
   /*----------------------------- HSI48 Configuration --------------------------*/
@@ -987,7 +1036,6 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
     __HAL_RCC_SYSCLK_CONFIG(RCC_ClkInitStruct->SYSCLKSource);
 
     /* Get Start Tick */
-    tickstart = HAL_GetTick();
 
     if(RCC_ClkInitStruct->SYSCLKSource == RCC_SYSCLKSOURCE_HSE)
     {
@@ -1051,7 +1099,7 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
 
   /*-------------------------- PCLK1 Configuration ---------------------------*/
   if(((RCC_ClkInitStruct->ClockType) & RCC_CLOCKTYPE_PCLK1) == RCC_CLOCKTYPE_PCLK1)
-  {
+   {
     assert_param(IS_RCC_PCLK(RCC_ClkInitStruct->APB1CLKDivider));
     MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, RCC_ClkInitStruct->APB1CLKDivider);
   }

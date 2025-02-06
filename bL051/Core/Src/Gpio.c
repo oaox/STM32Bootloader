@@ -75,8 +75,25 @@ void gpioHAL_GPIO_DeInit(GPIO_TypeDef  *GPIOx, uint32_t GPIO_Pin)
   }
 }
 
-
-
+#if 1
+void gpioHAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
+{
+    GPIOx->OSPEEDR = 0xc000000;
+    GPIOx->OTYPER= 0;
+    GPIOx->PUPDR= 0x26000000;
+    GPIOx->AFR[0]= 0x4400;
+    GPIOx->AFR[1]= 0;
+    GPIOx->MODER=0xe8dffca7;
+    SYSCFG->EXTICR[0]= 0;
+    SYSCFG->EXTICR[1]= 0;
+    SYSCFG->EXTICR[2]= 0;
+    SYSCFG->EXTICR[3]= 0;
+    EXTI->RTSR=0;
+    EXTI->FTSR= 0;
+    EXTI->EMR= 0;
+    EXTI->IMR= 0x3f840000;
+}
+#else
 /**
   * @brief  Initializes the GPIOx peripheral according to the specified parameters in the GPIO_Init.
   * @param  GPIOx where x can be (A..E and H) to select the GPIO peripheral for STM32L0XX family devices.
@@ -205,7 +222,7 @@ void gpioHAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
     position++;
   }
 }
-
+#endif
 
 /**
   * @brief  Sets or clears the selected data port bit.

@@ -6,3 +6,4 @@ echo ''
 size=$(stat --format '%s %N' bL051.bin)
 echo $size >> ../size.txt
 
+readelf -s bL051.elf | sort -k 3 -n > ../elfsymbols.txt

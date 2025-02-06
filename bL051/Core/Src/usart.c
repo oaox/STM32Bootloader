@@ -23,6 +23,7 @@
 /* USER CODE BEGIN 0 */
 #include "Uart.h"
 #include "stm32l0xx_hal_rcc_ex.h"
+#include "Gpio.h"
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;

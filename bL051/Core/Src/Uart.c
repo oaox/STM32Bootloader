@@ -129,6 +129,7 @@ HAL_StatusTypeDef uartHAL_UART_Init(UART_HandleTypeDef *huart)
   return (uartUART_CheckIdleState(huart));
 }
 
+
 /**
   * @brief Configure the UART peripheral advanced features.
   * @param huart UART handle.
@@ -136,7 +137,8 @@ HAL_StatusTypeDef uartHAL_UART_Init(UART_HandleTypeDef *huart)
   */
 void uartUART_AdvFeatureConfig(UART_HandleTypeDef *huart)
 {
-  /* Check whether the set of advanced features to configure is properly set */
+#if 0
+	/* Check whether the set of advanced features to configure is properly set */
   assert_param(IS_UART_ADVFEATURE_INIT(huart->AdvancedInit.AdvFeatureInit));
 
   /* if required, configure TX pin active level inversion */
@@ -201,6 +203,7 @@ void uartUART_AdvFeatureConfig(UART_HandleTypeDef *huart)
     assert_param(IS_UART_ADVFEATURE_MSBFIRST(huart->AdvancedInit.MSBFirst));
     MODIFY_REG(huart->Instance->CR2, USART_CR2_MSBFIRST, huart->AdvancedInit.MSBFirst);
   }
+#endif
 }
 
 
@@ -268,7 +271,17 @@ HAL_StatusTypeDef uartUART_CheckIdleState(UART_HandleTypeDef *huart)
   return HAL_OK;
 }
 
+#if 1
+HAL_StatusTypeDef uartUART_SetConfig(UART_HandleTypeDef *huart)
+{
+	 MODIFY_REG(huart->Instance->CR1, USART_CR1_FIELDS, 0xc);
+	 MODIFY_REG(huart->Instance->CR2, USART_CR2_STOP, 0);
+	 MODIFY_REG(huart->Instance->CR3, USART_CR3_FIELDS, 0);
+	 huart->Instance->BRR = (uint16_t)0xd0;
+	return HAL_OK;
 
+}
+#else
 /**
   * @brief Configure the UART peripheral.
   * @param huart UART handle.
@@ -488,7 +501,7 @@ HAL_StatusTypeDef uartUART_SetConfig(UART_HandleTypeDef *huart)
   }
 return ret;
 }
-
+#endif
 
 
 /**

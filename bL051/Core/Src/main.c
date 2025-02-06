@@ -269,7 +269,10 @@ if (!attf && app_maybe_present) {
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+	volatile GPIO_TypeDef  *GPIOx;
+GPIOx= GPIOA;
+
+while (1)
   {
 	  int r;
 	  r= flashReadOneLine();
