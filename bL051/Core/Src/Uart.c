@@ -12,6 +12,7 @@
 #include "usart.h"
 #include "Uart.h"
 #include "Rcc.h"
+#include "Hal.h"
 
 #define HUART huart2
 #define DE_Pin GPIO_PIN_1
@@ -20,12 +21,26 @@
 #define RX_READY 0x20
 
 static void uartUART_EndRxTransfer(UART_HandleTypeDef *huart);
+void setLed(bool state)
+{
+	if (state)
+	  {
+	    LED_GPIO_Port->BSRR = LED_Pin;
+	  }
+	  else
+	  {
+		  LED_GPIO_Port->BRR = LED_Pin;
+	  }
+}
 
 
 int uartGetOneChar(uint8_t *pData)
 {
+	setLed(false);
 	if ( (HUART.Instance->ISR & RX_READY) != 0) {
 		*pData= (uint8_t)HUART.Instance->RDR;
+		setLed(true);
+
 		return 0;
 	}
 	return -1;
@@ -220,7 +235,7 @@ HAL_StatusTypeDef uartUART_CheckIdleState(UART_HandleTypeDef *huart)
   huart->ErrorCode = HAL_UART_ERROR_NONE;
 
   /* Init tickstart for timeout management */
-  tickstart = HAL_GetTick();
+  tickstart = halHAL_GetTick();
 
   /* Check if the Transmitter is enabled */
   if ((huart->Instance->CR1 & USART_CR1_TE) == USART_CR1_TE)
@@ -271,7 +286,7 @@ HAL_StatusTypeDef uartUART_CheckIdleState(UART_HandleTypeDef *huart)
   return HAL_OK;
 }
 
-#if 1
+#if 0
 HAL_StatusTypeDef uartUART_SetConfig(UART_HandleTypeDef *huart)
 {
 	 MODIFY_REG(huart->Instance->CR1, USART_CR1_FIELDS, 0xc);
@@ -523,7 +538,7 @@ HAL_StatusTypeDef uartUART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, uin
     /* Check for the Timeout */
     if (Timeout != HAL_MAX_DELAY)
     {
-      if (((HAL_GetTick() - Tickstart) > Timeout) || (Timeout == 0U))
+      if (((halHAL_GetTick() - Tickstart) > Timeout) || (Timeout == 0U))
       {
 
         return HAL_TIMEOUT;

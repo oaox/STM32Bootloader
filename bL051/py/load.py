@@ -32,7 +32,7 @@ while True:
     ser.write(str.encode(l))
     print(l)
     #time.sleep(1)
-    rec=''	
+    rec=''
     while True:
         c= ser.read(1)
         

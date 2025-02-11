@@ -11,6 +11,7 @@
 //#include <stm32l0xx_hal_rcc_ex.h>
 //#include <stm32l0xx_hal_def.h>
 #include "Rcc.h"
+#include "Hal.h"
 #endif
 
 #if 1
@@ -149,10 +150,10 @@ uint32_t tickstart;
 
 //hsi_state = RCC_OscInitStruct->HSIState;
 __HAL_RCC_HSI_CONFIG(0x1);
-tickstart = HAL_GetTick();
+tickstart = halHAL_GetTick();
 while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSIRDY) == 0U)
 {
-  if((HAL_GetTick() - tickstart ) > HSI_TIMEOUT_VALUE)
+  if((halHAL_GetTick() - tickstart ) > HSI_TIMEOUT_VALUE)
   {
     return HAL_TIMEOUT;
   }
@@ -161,12 +162,12 @@ __HAL_RCC_HSI_CALIBRATIONVALUE_ADJUST(RCC_OscInitStruct->HSICalibrationValue);
 __HAL_RCC_PLL_DISABLE();
 
 /* Get Start Tick */
-tickstart = HAL_GetTick();
+tickstart = halHAL_GetTick();
 
 /* Wait till PLL is ready */
 while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)  != 0U)
 {
-  if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
+  if((halHAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
   {
     return HAL_TIMEOUT;
   }
@@ -177,12 +178,12 @@ __HAL_RCC_PLL_CONFIG(RCC_OscInitStruct->PLL.PLLSource,
 __HAL_RCC_PLL_ENABLE();
 
 /* Get Start Tick */
-tickstart = HAL_GetTick();
+tickstart = halHAL_GetTick();
 
-tickstart = HAL_GetTick();
+tickstart = halHAL_GetTick();
 while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)  == 0U)
 {
-  if((HAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
+  if((halHAL_GetTick() - tickstart ) > PLL_TIMEOUT_VALUE)
   {
     return HAL_TIMEOUT;
   }
@@ -760,11 +761,11 @@ HAL_StatusTypeDef rccHAL_RCCEx_PeriphCLKConfig(RCC_PeriphCLKInitTypeDef  *Periph
       SET_BIT(PWR->CR, PWR_CR_DBP);
 
       /* Wait for Backup domain Write protection disable */
-      tickstart = HAL_GetTick();
+      tickstart = halHAL_GetTick();
 
       while(HAL_IS_BIT_CLR(PWR->CR, PWR_CR_DBP))
       {
-        if((HAL_GetTick() - tickstart) > RCC_DBP_TIMEOUT_VALUE)
+        if((halHAL_GetTick() - tickstart) > RCC_DBP_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
         }
@@ -814,12 +815,12 @@ HAL_StatusTypeDef rccHAL_RCCEx_PeriphCLKConfig(RCC_PeriphCLKInitTypeDef  *Periph
       if (HAL_IS_BIT_SET(temp_reg, RCC_CSR_LSEON))
       {
         /* Get Start Tick */
-        tickstart = HAL_GetTick();
+        tickstart = halHAL_GetTick();
 
         /* Wait till LSE is ready */
         while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == 0U)
         {
-          if((HAL_GetTick() - tickstart ) > RCC_LSE_TIMEOUT_VALUE)
+          if((halHAL_GetTick() - tickstart ) > RCC_LSE_TIMEOUT_VALUE)
           {
             return HAL_TIMEOUT;
           }
@@ -974,11 +975,11 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
 
     /* Check that the new number of wait states is taken into account to access the Flash
     memory by polling the FLASH_ACR register */
-    tickstart = HAL_GetTick();
+    tickstart = halHAL_GetTick();
 
     while (__HAL_FLASH_GET_LATENCY() != FLatency)
     {
-      if ((HAL_GetTick() - tickstart) > CLOCKSWITCH_TIMEOUT_VALUE)
+      if ((halHAL_GetTick() - tickstart) > CLOCKSWITCH_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
       }
@@ -1041,7 +1042,7 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
     {
       while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_HSE)
       {
-        if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
+        if((halHAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
         }
@@ -1051,7 +1052,7 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
     {
       while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_PLLCLK)
       {
-        if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
+        if((halHAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
         }
@@ -1061,7 +1062,7 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
     {
       while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_HSI)
       {
-        if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
+        if((halHAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
         }
@@ -1071,7 +1072,7 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
     {
       while(__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_MSI)
       {
-        if((HAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
+        if((halHAL_GetTick() - tickstart ) > CLOCKSWITCH_TIMEOUT_VALUE)
         {
           return HAL_TIMEOUT;
         }
@@ -1086,11 +1087,11 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
 
     /* Check that the new number of wait states is taken into account to access the Flash
     memory by polling the FLASH_ACR register */
-    tickstart = HAL_GetTick();
+    tickstart = halHAL_GetTick();
 
     while (__HAL_FLASH_GET_LATENCY() != FLatency)
     {
-      if ((HAL_GetTick() - tickstart) > CLOCKSWITCH_TIMEOUT_VALUE)
+      if ((halHAL_GetTick() - tickstart) > CLOCKSWITCH_TIMEOUT_VALUE)
       {
         return HAL_TIMEOUT;
       }
@@ -1115,7 +1116,7 @@ HAL_StatusTypeDef rccHAL_RCC_ClockConfig(RCC_ClkInitTypeDef  *RCC_ClkInitStruct,
   SystemCoreClock = rccHAL_RCC_GetSysClockFreq() >> AHBPrescTable[(RCC->CFGR & RCC_CFGR_HPRE)>> RCC_CFGR_HPRE_Pos];
 
   /* Configure the source of time base considering new system clocks settings*/
-  status = HAL_InitTick(uwTickPrio);
+  status = halHAL_InitTick(uwTickPrio);
   if(status != HAL_OK)
   {
     return status;

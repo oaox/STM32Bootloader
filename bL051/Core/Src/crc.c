@@ -18,8 +18,9 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <stdbool.h>
 #include "crc.h"
-
+#include "Crc.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -44,7 +45,7 @@ void MX_CRC_Init(void)
   hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
   hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
   hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
-  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  if (crcHAL_CRC_Init(&hcrc) != HAL_OK)
   {
     Error_Handler();
   }

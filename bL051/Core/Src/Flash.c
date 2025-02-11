@@ -14,6 +14,8 @@
 #include "stm32l0xx_hal_flash_ex.h"
 #include "Uart.h"
 #include "Flash.h"
+#include "Hal.h"
+#include "Hflash.h"
 
 
 const uint32_t AppAddr= 0x8005000;
@@ -125,17 +127,17 @@ int flashReadOneLine(void)
 	}
 	while (hexLine[0] != ':');
 	//got message start
-	timeout= HAL_GetTick() + 10;
+	timeout= halHAL_GetTick() + 10;
 	//get data byte count
 	idx= 0; // We know we gotr a colon, so just write over it
 	while(1) {
-		if (HAL_GetTick() > timeout) {
+		if (halHAL_GetTick() > timeout) {
 			err= FLASH_TIMEOUT;
 			goto exit;
 		}
 		r= uartGetOneChar(hexLine+idx);
 		if (r < 0) continue;
-		timeout= HAL_GetTick() + 10;
+		timeout= halHAL_GetTick() + 10;
 
 		if (hexLine[idx] == '\n') {
 			err= idx;// length including \n
@@ -241,12 +243,13 @@ return err;
 int flashWriteData(void)
 {
 	int err;
-	uint16_t flashsize;
+	uint32_t flashSize;
 	uint32_t realAddr;
 
-	flashsize= *(uint16_t*)0x1ff8007c;
+	flashSize= *(uint16_t*)0x1ff8007c; // size in kiBit
+	flashSize <<= 10;
 
-	HAL_StatusTypeDef rf=  HAL_FLASH_Unlock();
+	HAL_StatusTypeDef rf=  hfHAL_FLASH_Unlock();
 	if (rf != HAL_OK) return rf;
 
 	if (flashPar.frameType != 0) {
@@ -255,12 +258,12 @@ int flashWriteData(void)
 	}
 
 		realAddr= flashPar.extAddr+ flashPar.address;
-		if ((realAddr < AppAddr) || (realAddr > (0x8000000  + (*(uint32_t*)0x1ff8007c)*1024 - 64))) {
+		if ((realAddr < AppAddr) || (realAddr > (0x8000000  + flashSize - 64))) {
 			err= FLASH_ADDR_RANGE;
 			goto exit;
 		}
 		if ((realAddr & (FLASH_PAGE_SIZE - 1)) == 0) {
-			FLASH_PageErase(realAddr);
+			hfxFLASH_PageErase(realAddr);
 		}
 		//rf= HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, realAddr, data32[pos]);
 		//rf= HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, realAddr, 0x12343210);
@@ -270,13 +273,13 @@ int flashWriteData(void)
 		//address += 4;
 	//}
 	if (flashPar.byteCount == 64){
-		rf= HAL_FLASHEx_HalfPageProgram(realAddr, data32);
+		rf= hrfHAL_FLASHEx_HalfPageProgram(realAddr, data32);
 	}
 	else {
 		err= FLASH_RECORD_SIZE;
 		goto exit;
 	}
-	err=  HAL_FLASH_Lock();
+	err=  hfHAL_FLASH_Lock();
 	exit:
 	return err;
 
