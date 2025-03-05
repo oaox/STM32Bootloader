@@ -72,6 +72,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	  uint32_t attPin;
 
   /* USER CODE END 1 */
 
@@ -96,6 +97,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+	  attPin= GPIOA->IDR & 0x8000;
+	  if (! attPin)
+		  start_application(AppAddr);
 
   /* USER CODE END 2 */
 
@@ -104,7 +108,6 @@ int main(void)
   while (1)
   {
 	  int r;
-	  uint32_t attPin;
 	  /*
 	  uint32_t count= 0;
 	  LED1_GPIO_Port->BSRR= LED1_Pin;
@@ -115,9 +118,6 @@ int main(void)
 	  while(utilDelay(0) != 0);
 	  //HAL_Delay(50);
 	   */
-	  	  attPin= GPIOA->IDR;
-	  	  attPin= attPin & 0x8000;
-	  	  continue;
 		r = flashReadOneLine();
 		r = flashDecodeLine();
 		if (r == FLASH_FIN) {

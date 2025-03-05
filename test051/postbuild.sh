@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd Debug
+
+
 f_name=test051
 date > log
 

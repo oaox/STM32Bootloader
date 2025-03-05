@@ -14,6 +14,7 @@ void uintToHex(uint32_t v, char *buff, uint8_t term);
 uint32_t utilDelay(uint32_t delayMs);
 bool utilIsFlash(uint32_t a);
 uint32_t utilFlashSize(void);
+HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority);
 
 
 

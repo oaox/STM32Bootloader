@@ -75,18 +75,22 @@ SECTIONS
 
   /* The program code and other data into "FLASH" Rom type memory */
   /*https://mcuoneclipse.com/2014/10/06/putting-code-of-files-into-special-section-with-the-gnu-linker/*/
-  .isr_functions :
-  {
-  	. = ALIGN(4);
-  	*stm32f0xx_it.o (.text .text*)
-  	*startup_stm32f072cbtx.o (.text .text*)
-    } >FLASH
-  
+
+
+.handlers :
+  { 
+    . = ALIGN(4);
+    *stm32f0xx_it.o (.text .text*) 
+    *startup_stm32f072cbtx.o (.text .text*)
+    . = ALIGN(4); 
+  }  > FLASH 
+
   .text :
   {
     . = ALIGN(4);
-    *(EXCLUDE_FILE(*stm32f0xx_it.o).text .text*)
-    *(EXCLUDE_FILE(*startup_stm32f072cbtx.o).text .text*)
+     /* *(EXCLUDE_FILE(*stm32f0xx_it.o).text .text*)*/
+    /**(EXCLUDE_FILE(*startup_stm32f072cbtx.o).text .text*)*/
+ 
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */

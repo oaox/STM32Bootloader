@@ -122,6 +122,7 @@ void PendSV_Handler(void)
 /**
   * @brief This function handles System tick timer.
   */
+//__attribute__ ((section ("entry")))
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
